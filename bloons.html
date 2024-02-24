@@ -1,121 +1,4 @@
 <!doctype html>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-	function getData(url){
-		mapString = "<tr>";
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				for (let index=0; (index<data.body.length) && (index<5); index++){
-					mapString = mapString.concat("<td>", data.body[index].name, "</td>");
-				}
-				mapString = mapString.concat("</tr><tr>");
-				
-				for (let index=0; (index<data.body.length) && (index<5); index++){
-					mapString = mapString.concat("<td id=mapThumbnail",index,"></td>");
-					getMapInfo(data.body[index].metadata, index);
-				}
-
-				mapString = mapString.concat("</tr>");
-
-				document.getElementById("mapList").innerHTML = mapString;
-			});
-	}
-
-	function getMapInfo(url, currentNumber){
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				mapImage = data.body.mapURL;
-				mapURL = "<img src=\"".concat(mapImage,"\">");
-				console.log(mapURL);
-
-				document.getElementById("mapThumbnail".concat(currentNumber)).innerHTML = mapURL;
-			});
-	}
-
-	function getRaceData(url){
-		fetch(url)
-			.then((race_response) => race_response.json())
-			.then(race_data => {
-				num_races = race_data.body.length;
-				race_names = [];
-				race_plays = [];
-
-				for(index=0; index<num_races; ++index)
-				{
-					race_names.push(race_data.body[index].name);
-					race_plays.push(race_data.body[index].totalScores);
-				}
-
-				const ctx = document.getElementById('myChart');
-				
-				let chartID = new Chart(ctx, {
-					type: 'bar',
-					data: {
-					labels: race_names,
-					datasets: [{
-						label: "Races",
-						data: race_plays,
-						borderWidth: 1
-					}]
-					},
-					options: {
-					scales: {
-						y: {
-						beginAtZero: true
-						}
-					}
-					}
-				});
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	}
-
-	function getBossData(url){
-		fetch(url)
-			.then((boss_response) => boss_response.json())
-			.then(boss_data => {
-				num_races = boss_data.body.length;
-				boss_names = [];
-				boss_plays = [];
-
-				for(index=0; index<num_races; ++index)
-				{
-					boss_names.push(boss_data.body[index].name);
-					boss_plays.push(boss_data.body[index].totalScores_standard);
-				}
-
-				const ctx = document.getElementById('bossChart');
-				
-				let chartID = new Chart(ctx, {
-					type: 'bar',
-					data: {
-					labels: boss_names,
-					datasets: [{
-						label: "Bosses",
-						data: boss_plays,
-						borderWidth: 1
-					}]
-					},
-					options: {
-					scales: {
-						y: {
-						beginAtZero: true
-						}
-					}
-					}
-				});
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	}
-
-</script>
-
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -127,7 +10,108 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/reveal.min.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/theme/black.min.css">
 
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+		<script>
+			function getData(url){
+				mapString = "<tr>";
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						for (let index=0; (index<data.body.length) && (index<5); index++){
+							mapString = mapString.concat("<td>", data.body[index].name, "</td>");
+						}
+						mapString = mapString.concat("</tr><tr>");
+						
+						for (let index=0; (index<data.body.length) && (index<5); index++){
+							mapString = mapString.concat("<td id=mapThumbnail",index,"></td>");
+							getMapThumbnail(data.body[index].metadata, index);
+						}
+
+						mapString = mapString.concat("</tr>");
+
+						document.getElementById("mapList").innerHTML = mapString;
+					});
+			}
+
+			function getMapThumbnail(url, currentNumber){
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						mapImage = data.body.mapURL;
+						mapURL = "<img src=\"".concat(mapImage,"\">");
+
+						document.getElementById("mapThumbnail".concat(currentNumber)).innerHTML = mapURL;
+					});
+			}
+
+			function getRaceData(url){
+				fetch(url)
+					.then((race_response) => race_response.json())
+					.then(race_data => {
+						num_races = race_data.body.length;
+						race_names = [];
+						race_plays = [];
+
+						for(index=0; index<num_races; ++index)
+						{
+							race_names.push(race_data.body[index].name);
+							race_plays.push(race_data.body[index].totalScores);
+						}
+
+						showChart(race_plays,race_names,"Races","raceChart");
+					})
+					.catch((error) => {
+						console.log(error);
+					});
+			}
+
+			function getBossData(url){
+				fetch(url)
+					.then((boss_response) => boss_response.json())
+					.then(boss_data => {
+						num_races = boss_data.body.length;
+						boss_names = [];
+						boss_plays = [];
+
+						for(index=0; index<num_races; ++index)
+						{
+							boss_names.push(boss_data.body[index].name);
+							boss_plays.push(boss_data.body[index].totalScores_standard);
+						}
+						
+						showChart(boss_plays,boss_names,"Bosses","bossChart");
+						
+					})
+					.catch((error) => {
+						console.log(error);
+					});
+			}
+
+			function showChart(data,names, data_label, elementID){
+				const ctx = document.getElementById(elementID);
+				const chartID = new Chart(ctx, {
+					type: 'bar',
+					data: {
+					labels: names,
+					datasets: [{
+						label: data_label,
+						data: data,
+						borderWidth: 1
+					}]
+					},
+					options: {
+					scales: {
+						y: {
+						beginAtZero: true
+						}
+					}
+					}
+				});
+			}
+
+		</script>
 	</head>
+	
 	<body>
 		<div class="reveal">
 			<div class="slides">
@@ -154,7 +138,7 @@
 				</section>
 				<section>
 					<h2 id="RaceHeader">Races</h2>
-					<canvas id="myChart" style="width:100%;">
+					<canvas id="raceChart" style="width:100%;">
 						<script>
 							const race_url = "https://data.ninjakiwi.com/btd6/races";
 							getRaceData(race_url);
