@@ -1,0 +1,183 @@
+<!doctype html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+	function getData(url){
+		mapString = "<tr>";
+		fetch(url)
+			.then(response => response.json())
+			.then(data => {
+				for (let index=0; (index<data.body.length) && (index<5); index++){
+					mapString = mapString.concat("<td>", data.body[index].name, "</td>");
+				}
+				mapString = mapString.concat("</tr><tr>");
+				
+				for (let index=0; (index<data.body.length) && (index<5); index++){
+					mapString = mapString.concat("<td id=mapThumbnail",index,"></td>");
+					getMapInfo(data.body[index].metadata, index);
+				}
+
+				mapString = mapString.concat("</tr>");
+
+				document.getElementById("mapList").innerHTML = mapString;
+			});
+	}
+
+	function getMapInfo(url, currentNumber){
+		fetch(url)
+			.then(response => response.json())
+			.then(data => {
+				mapImage = data.body.mapURL;
+				mapURL = "<img src=\"".concat(mapImage,"\">");
+				console.log(mapURL);
+
+				document.getElementById("mapThumbnail".concat(currentNumber)).innerHTML = mapURL;
+			});
+	}
+
+	function getRaceData(url){
+		fetch(url)
+			.then((race_response) => race_response.json())
+			.then(race_data => {
+				num_races = race_data.body.length;
+				race_names = [];
+				race_plays = [];
+
+				for(index=0; index<num_races; ++index)
+				{
+					race_names.push(race_data.body[index].name);
+					race_plays.push(race_data.body[index].totalScores);
+				}
+
+				const ctx = document.getElementById('myChart');
+				
+				let chartID = new Chart(ctx, {
+					type: 'bar',
+					data: {
+					labels: race_names,
+					datasets: [{
+						label: "Races",
+						data: race_plays,
+						borderWidth: 1
+					}]
+					},
+					options: {
+					scales: {
+						y: {
+						beginAtZero: true
+						}
+					}
+					}
+				});
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
+	function getBossData(url){
+		fetch(url)
+			.then((boss_response) => boss_response.json())
+			.then(boss_data => {
+				num_races = boss_data.body.length;
+				boss_names = [];
+				boss_plays = [];
+
+				for(index=0; index<num_races; ++index)
+				{
+					boss_names.push(boss_data.body[index].name);
+					boss_plays.push(boss_data.body[index].totalScores_standard);
+				}
+
+				const ctx = document.getElementById('bossChart');
+				
+				let chartID = new Chart(ctx, {
+					type: 'bar',
+					data: {
+					labels: boss_names,
+					datasets: [{
+						label: "Bosses",
+						data: boss_plays,
+						borderWidth: 1
+					}]
+					},
+					options: {
+					scales: {
+						y: {
+						beginAtZero: true
+						}
+					}
+					}
+				});
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
+</script>
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Why Bloons is Awesome!</title>
+
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/reset.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/reveal.min.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/theme/black.min.css">
+
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2 class="r-fit-text">Bloons TD6</h2>
+					<h2 class="r-fit-text">The Best Tower Defense Game Ever</h2>
+				</section>
+				<section>
+					<h2>Bloons TD6</h2>
+					<p>Looking for a fun tower defense game? Look no further than
+						<a href="https://ninjakiwi.com/Games/Mobile/Bloons-TD-6.html">Bloons TD6</a>.
+					</p>
+				</section>
+				<section>
+					<h2>Custom Maps</h2>
+					<p>Bloons now allows you to create custom maps. Here are the favorite custom maps:</p>
+					<font size="2">
+						<table style="width:90%" id="mapList"></table>
+					</font>
+					<script>
+						const apiUrl = "https://data.ninjakiwi.com/btd6/maps/filter/mostLiked";
+						getData(apiUrl);
+					</script>
+				</section>
+				<section>
+					<h2 id="RaceHeader">Races</h2>
+					<canvas id="myChart" style="width:100%;">
+						<script>
+							const race_url = "https://data.ninjakiwi.com/btd6/races";
+							getRaceData(race_url);
+						</script>
+					</canvas>
+				</section>
+				<section>
+					<h2 id="BossHeader">Bosses</h2>
+					<canvas id="bossChart" style="width:100%;">
+						<script>
+							const boss_url = "https://data.ninjakiwi.com/btd6/bosses";
+							getBossData(boss_url);
+						</script>
+					</canvas>
+				</section>
+			</div>
+		</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.0.4/reveal.min.js"></script>
+		<script>
+			Reveal.initialize({
+				hash: true,
+			});
+		</script>
+	</body>
+</html>
